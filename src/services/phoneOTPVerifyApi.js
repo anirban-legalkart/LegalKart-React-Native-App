@@ -1,6 +1,7 @@
 import axiosInstance from "./axiosInstance";
 import * as URL from '../config/apiUrls';
 import {decode as atob, encode as btoa} from 'base-64'
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 
@@ -14,7 +15,9 @@ export const callVerifyOTPApi= async (payload) => {
     
     
     const {data = {}} = await axiosInstance.post(URL.VERIFY_OTP_API + jwt , payload); //if we dont recive any respons then it give rspons like this data = {}
-    console.log(data)
+    AsyncStorage.setItem("_csrf", data._csrf);
+    AsyncStorage.setItem('userToken', data.token)
+    // console.log(data)
     return data;
 }
 

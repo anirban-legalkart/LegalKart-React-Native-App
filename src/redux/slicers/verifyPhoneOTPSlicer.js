@@ -21,11 +21,16 @@ export const verifyPhoneOTPSlicer = createSlice({ //whole slicer
         },
         onVerifyOTPSubmitError: (state, { payload }) => {
             return { ...state, isLoading: false, isError: true, error: payload }
-        }
+        },
+        resetVerifyInfo: (state) => ({
+			...state,
+			data: null,
+            message: null
+		})
     }
 })
 
-export const { onVerifyOTPSubmit, onVerifyOTPSubmitSuccess,  onVerifyOTPSubmitError
+export const { onVerifyOTPSubmit, onVerifyOTPSubmitSuccess,  onVerifyOTPSubmitError, resetVerifyInfo
 } = verifyPhoneOTPSlicer.actions; 
 
 export default verifyPhoneOTPSlicer.reducer; // this is reducer (it alows us to grab the reducer)

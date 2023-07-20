@@ -22,14 +22,14 @@ export const registerSlicer = createSlice({ //whole slicer
             return { ...state, isLoading: false, isError: true, error: payload }
         },
 
-        // resetLogedInUserInfo: (state) => ({
-		// 	...state,
-		// 	data: null,
-        //     message: null
-		// }),
+        resetRegisterInfo: (state) => ({
+			...state,
+			data: null,
+            message: null
+		})
     }
 })
 
-export const { onUserRegisterSubmit, onUserRegisterSubmitSuccess, onUserRegisterSubmitError } = registerSlicer.actions; //this is action ; exporting all of the 3 actions from registerSlicer.actions= { onUserRegisterSubmit, ..... }
+export const { onUserRegisterSubmit, onUserRegisterSubmitSuccess, onUserRegisterSubmitError , resetRegisterInfo} = registerSlicer.actions; //this is action ; exporting all of the 3 actions from registerSlicer.actions= { onUserRegisterSubmit, ..... }
 
 export default registerSlicer.reducer; // this is reducer (it alows us to grab the reducer)

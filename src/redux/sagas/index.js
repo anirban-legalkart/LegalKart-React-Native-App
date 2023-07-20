@@ -5,6 +5,8 @@ import verifyPhoneOTPSaga from "./verifyPhoneOTPSaga";
 import registerSaga from "./registerSaga";
 import verifyRegisterPhoneOTPSaga from "./verifyRegisterPhoneOTPSaga";
 import resendPhoneOTPSaga from "./resendPhoneOTPSaga";
+import getLawyerProfileDetailsSaga from "./getLawyerProfileDetailsSaga";
+import updateLawyerProfileSaga from "./updateLawyerProfileSaga";
 
 
 export default function* rootSaga() {
@@ -14,6 +16,8 @@ export default function* rootSaga() {
         registerSaga(),
         verifyRegisterPhoneOTPSaga(),
         resendPhoneOTPSaga(),
+        getLawyerProfileDetailsSaga(),
+        updateLawyerProfileSaga(),
     ]);
 }
 

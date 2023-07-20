@@ -6,7 +6,8 @@ import OtpScreen from '../components/OtpScreen';
 import { AuthContext } from '../context/AuthContext';
 import { onUserLoginSubmit } from '../redux/slicers/loginSlicer';
 import { onResendOTPSubmit } from '../redux/slicers/resendPhoneOTPSlicer';
-import { onVerifyOTPSubmit } from '../redux/slicers/verifyPhoneOTPSlicer';
+import { onVerifyOTPSubmit, resetVerifyInfo } from '../redux/slicers/verifyPhoneOTPSlicer';
+import { onGetLawyerProfileDetailsSubmit } from "../redux/slicers/getLawyerProfileDetailsSlicer";
 
 const { width, height } = Dimensions.get('screen');
 
@@ -115,10 +116,10 @@ const LoginScreen = ({ navigation }) => {
 
         if (verifiedOtpInfo?.token && isValidMobileNo) {
 
-            console.log(verifiedOtpInfo, 'verifiedOtpInfo -->');
+            dispatch(onGetLawyerProfileDetailsSubmit())
+            
             login(verifiedOtpInfo?.token)
         }
-
     }, [verifiedOtpInfo])
 
     useEffect(() => {
@@ -145,9 +146,13 @@ const LoginScreen = ({ navigation }) => {
 
 
 
+    useEffect(() => {
+        enteredOTP?.length > 5 && verifyPhoneOTP()        
+        dispatch(resetVerifyInfo())
+      }, [enteredOTP])
 
 
-
+    
     return (
         <>
 
@@ -166,7 +171,7 @@ const LoginScreen = ({ navigation }) => {
                         <FormControl isInvalid={'uId' in errors} w="100%" maxW="300px"  >
                             <FormControl.Label>Enter email/ Mobile no.</FormControl.Label>
 
-                            <Input keyboardType='default' variant="underlined" placeholder="Enter email/ Mobile no." onChangeText={value => setData({
+                            <Input maxLength={formData?.uId?.length > 4 &&  /^\d+$/.test(formData?.uId) ? 10 :80 } keyboardType='default' variant="underlined" placeholder="Enter email/ Mobile no." onChangeText={value => setData({
                                 ...formData,
                                 uId: value
                             })} />
@@ -205,7 +210,7 @@ const LoginScreen = ({ navigation }) => {
 
             </ScrollView>
 
-                : <OtpScreen resendOTP={resendOTP} disableTimer={disableTimer} setEnteredOTP={setEnteredOTP} number={formData?.uId} myOnpress={() => verifyPhoneOTP()}  callResendPhoneOTPApi={() => callResendPhoneOTPApi()}  />
+                : <OtpScreen verifiedOtpInfo={verifiedOtpInfo} disableVerifyBtn={enteredOTP?.length > 5 ?false :true} resendOTP={resendOTP} disableTimer={disableTimer} setEnteredOTP={setEnteredOTP} number={formData?.uId} goToLogin={()=> setIsLoginBtnClick(false)} myOnpress={() => verifyPhoneOTP()}  callResendPhoneOTPApi={() => callResendPhoneOTPApi()}  />
             }
 
             

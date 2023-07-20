@@ -22,6 +22,7 @@ export const AuthProvider = (props) => {
         dispatch(resetLogedInUserInfo())
         setUserToken(null)
         AsyncStorage.removeItem('userToken');
+        AsyncStorage.removeItem('_csrf');
     }
     
     const isLoggedIn =()=>{

@@ -27,7 +27,7 @@ export default function OtpScreen(props) {
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-        Please enter the verification code we've sent you on <Text style={{ fontWeight: 'bold', alignSelf: 'center' }}>{props.number}</Text>
+        Please enter the verification code we've sent you on <Text style={{ fontWeight: 'bold', alignSelf: 'center' }}>{props.countryCode ? props.countryCode : '+91 '}{props.number}</Text>
       </Text>
 
       <FormControl>
@@ -44,16 +44,25 @@ export default function OtpScreen(props) {
 
       </FormControl>
 
-      {props.resendOTP  ? <Text style={{color: props.resendOTP ?"#808080" : '#000', fontSize:20 }}> 00:{props.disableTimer}</Text>
-      
-      :<Text >
-      Didn't receive code?  
-      <Text onPress={props.callResendPhoneOTPApi} style={{fontWeight: 'bold',}}>  Resend OTP</Text>
-    </Text>}
+      {props.resendOTP ? <Text style={{ color: props.resendOTP ? "#808080" : '#000', fontSize: 20 }}> 00:{props.disableTimer}</Text>
 
-      <Button style={{ width: '50%', marginTop: 80 }} onPress={props.myOnpress}>
+        : <Text >
+          Didn't receive code?
+          <Text onPress={props.callResendPhoneOTPApi} style={{ fontWeight: 'bold', }}>  Resend OTP</Text>
+        </Text>}
+
+      {props.verifiedOtpInfo?.success == false && <Text style={{ color: 'red', marginTop: 15 }}>{props.verifiedOtpInfo?.message}</Text>}
+
+      <Button isDisabled={props.disableVerifyBtn} style={{ width: '50%', marginTop: 80 }} onPress={props.myOnpress}>
         Verify
       </Button>
+
+
+      {props.goToLogin && <Text style={{ marginTop: 22 }}>
+        Go to
+        <Text onPress={props.goToLogin} style={{ fontWeight: 'bold', color: '#ff6600', fontSize: 19, textAlign: 'center' }}>  {`Login >`} </Text>
+      </Text>}
+
     </SafeAreaView>
   )
 }

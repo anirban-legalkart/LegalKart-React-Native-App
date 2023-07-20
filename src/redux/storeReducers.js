@@ -6,6 +6,8 @@ import verifyPhoneOTPReducer from "./slicers/verifyPhoneOTPSlicer";
 import registerReducer from "./slicers/registerSlicer"; 
 import verifyRegisterPhoneOTPReducer from "./slicers/verifyRegisterPhoneOTPSlicer"; 
 import resendPhoneOTPReducer from "./slicers/resendPhoneOTPSlicer"; 
+import getLawyerProfileDetailsReducer from "./slicers/getLawyerProfileDetailsSlicer"; 
+import updateLawyerProfileReducer from "./slicers/updateLawyerProfileSlicer"; 
 
 const reducers = {
     loginReducer: loginReducer,
@@ -13,6 +15,8 @@ const reducers = {
     registerReducer: registerReducer,
     verifyRegisterPhoneOTPReducer: verifyRegisterPhoneOTPReducer,
     resendPhoneOTPReducer: resendPhoneOTPReducer,
+    getLawyerProfileDetailsReducer: getLawyerProfileDetailsReducer,
+    updateLawyerProfileReducer: updateLawyerProfileReducer,
    
 }
 
