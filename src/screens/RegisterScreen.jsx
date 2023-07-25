@@ -1,7 +1,7 @@
 
 import { Box, Button, FormControl, HStack, Heading, Input, Modal, VStack } from "native-base";
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Dimensions, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, BackHandler, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import PhoneInput from "react-native-phone-number-input";
 import AIcon from 'react-native-vector-icons/dist/AntDesign';
 import { useDispatch, useSelector } from 'react-redux';
@@ -149,6 +149,22 @@ const RegisterScreen = ({ navigation }) => {
       login(registerVerifiedOtpInfo?.token)
     }
   }, [registerVerifiedOtpInfo])
+
+
+  function handleBackButtonClick() {
+    navigation.goBack()
+    setIsRegisterBtnClick(false)
+    return true;
+  }
+  
+  useEffect(() => {
+    // console.log('BackHandler called---');
+    setIsRegisterBtnClick(false)
+    BackHandler.addEventListener("hardwareBackPress", handleBackButtonClick);
+    return () => {
+      BackHandler.removeEventListener("hardwareBackPress", handleBackButtonClick);
+    };
+  }, [])
 
   return (
     <>

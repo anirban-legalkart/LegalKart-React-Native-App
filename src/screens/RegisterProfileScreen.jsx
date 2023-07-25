@@ -1,17 +1,19 @@
-import { View, Text, ScrollView, Dimensions, BackHandler, FlatList } from 'react-native'
-import { Box, Button, CheckIcon, Divider, FormControl, HStack, Heading, Icon, Input, Modal, Radio, Select, Spacer, Stack, VStack, WarningOutlineIcon } from "native-base";
+import { Button, Divider, FormControl, Input, Radio, Select, Stack, WarningOutlineIcon } from "native-base";
+import { BackHandler, Dimensions, ScrollView, Text, View } from 'react-native';
 import AIcon from 'react-native-vector-icons/dist/AntDesign';
 import { useDispatch, useSelector } from 'react-redux';
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import SelectDropdown from 'react-native-select-dropdown';
+import Spinner from '../components/Spinner';
 import { AuthContext } from '../context/AuthContext';
-import { callGetStateApi } from '../services/getStateApi';
+import { onUpdateLawyerProfileSubmit } from '../redux/slicers/updateLawyerProfileSlicer';
 import { callGetCityApi } from '../services/getCityApi';
 import { callGetLocalityApi } from '../services/getLocalityApi';
-import { onUpdateLawyerProfileSubmit } from '../redux/slicers/updateLawyerProfileSlicer';
-import Spinner from '../components/Spinner';
-import { TouchableOpacity } from 'react-native';
+import { callGetStateApi } from '../services/getStateApi';
 const { width, height } = Dimensions.get('screen');
+
+import { Controller, useForm } from "react-hook-form";
 
 const getYearList = () => {
     const date = new Date
@@ -27,20 +29,46 @@ const getYearList = () => {
 const RegisterProfileScreen = ({ navigation }) => {
     const { logout, test } = useContext(AuthContext);
     const dispatch = useDispatch();
+    const selectCityDropdownRef = useRef({});
+    const selectLocalityDropdownRef = useRef({});
 
     const [formData, setData] = useState({});
-    const [gender, setGender] = useState();
-    const [errors, setErrors] = useState({});
     const [stateData, setStateData] = useState([]);
     const [cityData, setCityData] = useState([]);
     const [localityData, setLocalityData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [showStateModal, setShowStateModal] = useState(false);
-    const [showCityModal, setShowCityModal] = useState(false);
-    const [showLocalityModal, setShowLocalityModal] = useState(false);
-    const [searchText, setSearchText] = useState("");
+    const [isNextBtnClick, setIsNextBtnClick] = useState(false);
 
     const updateProfileInfo = useSelector(state => state.updateLawyerProfileReducer.data);
+
+
+    const { control, handleSubmit, setValue, getValues, watch, trigger, formState: { isValid, errors } } = useForm({
+        defaultValues: {
+            fName: '',
+            lName: '',
+            gender: '',
+            email: '',
+            password: '',
+            barCouncilState: '',
+            barCouncilIdNo: '',
+            barCouncilYear: '',
+            selectedState: '',//
+            selectedCity: '',//
+            // stateId: '',
+            // cityId: '',
+            pinCode: '',
+            selectedLocality: '',//
+        }
+    });
+    const onSubmit = data => {
+        setData({
+            ...data,
+            ...formData,
+        }),
+            console.log(data, 'onSubmit---')
+    };
+
+    console.log(errors, 'errors--->');
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true)
@@ -67,14 +95,16 @@ const RegisterProfileScreen = ({ navigation }) => {
     }, [formData?.stateId])
 
     useEffect(() => {
-        if (formData?.pinCode?.length > 5) {
-            callGetLocalityApi(formData?.pinCode).then((res) => {
+        setValue("selectedLocality", '')
+        selectLocalityDropdownRef.current.reset()
+        if (getValues("pinCode").length > 5) {
+            trigger("selectedLocality")
+            callGetLocalityApi(getValues("pinCode")).then((res) => {
                 const newData = res?.location.map((item) => ({ ...item, isSelected: false }))
                 setLocalityData(newData)
-                // console.log(res,'resssss----')
             })
         }
-    }, [formData?.pinCode])
+    }, [watch("pinCode")])
 
 
     const submitProfileUpdateFrom = () => {
@@ -84,17 +114,17 @@ const RegisterProfileScreen = ({ navigation }) => {
             "_ptoken": "Development",
             "first_name": formData.fName,
             "last_name": formData.lName,
-            "gender": gender,
-            "email": formData.email,
+            "gender": formData.gender,
+            "email": getValues("email"),
             "new_password": formData.password,
-            "bar_council_no": `${formData.barCouncilState}/${formData.barCouncilIdNo}/${formData.barCouncilYear}`,
+            "bar_council_no": `${getValues("barCouncilState")}/${getValues("barCouncilIdNo")}/${getValues("barCouncilYear")}`,
             "state_id": formData.stateId,
             "city_id": formData.cityId,
             "zip_id": formData.pinCode,
             "court_id": 0,
             "referrer_id": 0,
         }
-        // console.log(dataSet,'Clicked -->');
+        // console.log(dataSet, 'Clicked -->');
         dispatch(onUpdateLawyerProfileSubmit(dataSet))
         setIsLoading(true)
     }
@@ -116,265 +146,84 @@ const RegisterProfileScreen = ({ navigation }) => {
     //     }, 10000)
     // }, [isLoading])
 
-    const onSelectFlatListItem = (dataSet, itemId) => {
-        const tempData = [];
-        dataSet.map((item, index) => {
-            if (item.id == itemId) {
-                tempData.push({ ...item, isSelected: true })
-            } else {
-                tempData.push({ ...item, isSelected: false })
-            }
 
-        });
-        return tempData
-    }
+    const BarCouncilFormView = () => {
+        return (
+            <>
 
-    const validateFromInput = () => {
-        const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
-        const passwordRegex = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/; //8 letter password, with at least a symbol, upper and lower case letters and a number
+                <FormControl.Label mt={5}>Bar Council Id</FormControl.Label>
 
+                <Stack direction="row" mb="2.5" mt="1.5" space={2.5}>
 
-        if (formData.fName === undefined) {
-            setErrors({
-                ...errors,
-                fName: 'First name is required',
-            });
-            return false;
-        }
-        if (formData.lName === undefined) {
-            setErrors({
-                ...errors,
-                lName: 'Last name is required',
-            });
-            return false;
-        }
+                    <FormControl isRequired isInvalid={'barCouncilState' in errors} w="30%" maxW="300px"  >
+                        <FormControl.Label>State</FormControl.Label>
 
-        if (gender === undefined) {
-            setErrors({
-                ...errors,
-                gender: 'Gender is required',
-            });
-            return false;
-        }
+                        {/* <Input value={formData.barCouncilState} maxLength={60} keyboardType='default' variant="underlined" placeholder="WB" onChangeText={value => setData({
+                            ...formData,
+                            barCouncilState: value
+                        })} /> */}
+                        <Controller
+                            control={control}
+                            rules={{
+                                required: isNextBtnClick && true,
+                            }}
+                            render={({ field: { onChange, onBlur, value } }) => (
+                                <Input autoCapitalize='none' value={value} maxLength={60} keyboardType='default' variant="underlined" placeholder="WB" onBlur={onBlur} onChangeText={onChange} />
+                            )}
+                            name="barCouncilState"
+                        />
+                        <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+                            {errors.barCouncilState?.type === 'required' && ` Bar council state is required`}
+                        </FormControl.ErrorMessage>
+                    </FormControl>
+                    <Divider bg="muted.800" thickness="2" orientation="vertical" />
 
-        if (formData.email === undefined) {
-            setErrors({
-                ...errors,
-                email: 'Email is required',
-            });
-            return false;
-        }  else if (emailRegex.test(formData.email) === false) {
-            setErrors({
-                ...errors,
-                email: 'Please enter valid email',
-            });
-            return false;
-        }
+                    <FormControl isRequired isInvalid={'barCouncilIdNo' in errors} w="30%" maxW="300px"  >
+                        <FormControl.Label>ID No.</FormControl.Label>
+                        <Controller
+                            control={control}
+                            rules={{
+                                required: isNextBtnClick && true,
+                            }}
+                            render={({ field: { onChange, onBlur, value } }) => (
+                                <Input autoCapitalize='none' value={value} maxLength={60} keyboardType='default' variant="underlined" placeholder="002222" onBlur={onBlur} onChangeText={onChange} />
+                            )}
+                            name="barCouncilIdNo"
+                        />
+                        {/* <Input value={formData.barCouncilIdNo} maxLength={60} keyboardType='default' variant="underlined" placeholder="002222" onChangeText={value => setData({
+                            ...formData,
+                            barCouncilIdNo: value
+                        })} /> */}
+                        <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+                            {errors.barCouncilIdNo?.type === 'required' && ` Bar council id no. is required`}
+                        </FormControl.ErrorMessage>
+                    </FormControl>
+                    <Divider bg="muted.800" thickness="2" orientation="vertical" />
 
-        if (formData.password === undefined) {
-            setErrors({
-                ...errors,
-                password: 'Password is required',
-            });
-            return false;
-        } else if (passwordRegex.test(formData.password) === false) {
-            setErrors({
-                ...errors,
-                password: 'Password should be minimum 8 characters with at least a symbol, upper and lower case letters and a number',
-            });
-            return false;
-        }
+                    <FormControl isRequired isReadOnly isInvalid={'barCouncilYear' in errors} w="30%" maxW="300px"  >
+                        <FormControl.Label>Year</FormControl.Label>
 
-        if (formData.barCouncilState === undefined) {
-            setErrors({
-                ...errors,
-                barCouncilState: 'Bar council state is required',
-            });
-            return false;
-        }
-
-        if (formData.barCouncilIdNo === undefined) {
-            setErrors({
-                ...errors,
-                barCouncilIdNo: 'Bar council id no is required',
-            });
-            return false;
-        }
-
-        if (formData.barCouncilYear === undefined) {
-            setErrors({
-                ...errors,
-                barCouncilYear: 'Bar council year is required',
-            });
-            return false;
-        }
-
-        if (formData.selectedState === undefined) {
-            setErrors({
-                ...errors,
-                selectedState: 'State is required',
-            });
-            return false;
-        }
-
-        if (formData.selectedCity === '') {
-            setErrors({
-                ...errors,
-                selectedCity: 'City is required',
-            });
-            return false;
-        }
-        if (formData.pinCode === undefined) {
-            setErrors({
-                ...errors,
-                pinCode: 'Pin Code is required',
-            });
-            return false;
-        }
-
-        if (formData.selectedLocality === '') {
-            setErrors({
-                ...errors,
-                selectedLocality: 'Locality is required',
-            });
-            return false;
-        }
-
-        return true;
-    }
-
-    return (
-        <>
-
-            <ScrollView style={{ flex: 1, backgroundColor: '#ffffff', marginTop: 10 }}
-                showsVerticalScrollIndicator={false}>
-
-                <Text style={{ color: '#4632A1', fontSize: 25, textAlign: 'center' }}>Thank you! Please complete your Registration</Text>
-
-                <View style={{ padding: 40 }}>
-
-                    {/*From input  */}
-                    <View style={{ marginTop: 5 }}>
-
-
-                        <FormControl isInvalid={'fName' in errors} w="100%" maxW="300px"  >
-                            <FormControl.Label>First Name</FormControl.Label>
-
-                            <Input maxLength={80} keyboardType='default' variant="underlined" placeholder="Enter First Name" onChangeText={value => setData({
-                                ...formData,
-                                fName: value
-                            })} />
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                                {errors.fName}
-                            </FormControl.ErrorMessage>
-
-                        </FormControl>
-
-                        <FormControl mt={5} isInvalid={'lName' in errors} w="100%" maxW="300px"  >
-                            <FormControl.Label>Last Name</FormControl.Label>
-
-                            <Input maxLength={80} keyboardType='default' variant="underlined" placeholder="Enter Last Name" onChangeText={value => setData({
-                                ...formData,
-                                lName: value
-                            })} />
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                                {errors.lName}
-                            </FormControl.ErrorMessage>
-                        </FormControl>
-
-                        <FormControl mt={5} isInvalid={'gender' in errors} w="100%" maxW="300px"  >
-                            <FormControl.Label>Gender</FormControl.Label>
-
-                            <Radio.Group name="myRadioGroup" accessibilityLabel="Gender" value={gender} onChange={nextValue => {
-                                setGender(nextValue)
-                            }} style={{ display: "flex", flexDirection: "row", justifyContent: 'space-evenly' }}>
-                                <Radio value="M" my={1}>
-                                    Male
-                                </Radio>
-                                <Radio value="F" my={1}>
-                                    Female
-                                </Radio>
-                                <Radio value="O" my={1}>
-                                    Others
-                                </Radio>
-                            </Radio.Group>
-
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                                {errors.gender}
-                            </FormControl.ErrorMessage>
-                        </FormControl>
-
-
-                        <FormControl mt={5} isInvalid={'email' in errors} w="100%" maxW="300px"  >
-                            <FormControl.Label>Email</FormControl.Label>
-
-                            <Input maxLength={100} keyboardType='email-address' variant="underlined" placeholder="Enter Email" onChangeText={value => setData({
-                                ...formData,
-                                email: value
-                            })} />
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                                {errors.email}
-                            </FormControl.ErrorMessage>
-                        </FormControl>
-
-                        <FormControl mt={5} isInvalid={'password' in errors} w="100%" maxW="300px"  >
-                            <FormControl.Label>Password</FormControl.Label>
-
-                            <Input maxLength={30} type={"password"} keyboardType='default' variant="underlined" placeholder="Enter Password" onChangeText={value => setData({
-                                ...formData,
-                                password: value
-                            })} />
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                                {errors.password}
-                            </FormControl.ErrorMessage>
-                        </FormControl>
-
-
-                        <FormControl.Label mt={5}>Bar Council Id</FormControl.Label>
-
-                        <Stack direction="row" mb="2.5" mt="1.5" space={2.5}>
-
-                            <FormControl isInvalid={'barCouncilState' in errors} w="30%" maxW="300px"  >
-                                <FormControl.Label>State</FormControl.Label>
-
-                                <Input maxLength={60} keyboardType='default' variant="underlined" placeholder="WB" onChangeText={value => setData({
-                                    ...formData,
-                                    barCouncilState: value
-                                })} />
-                                <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                                    {errors.barCouncilState}
-                                </FormControl.ErrorMessage>
-                            </FormControl>
-                            <Divider bg="muted.800" thickness="2" orientation="vertical" />
-
-                            <FormControl isInvalid={'barCouncilIdNo' in errors} w="30%" maxW="300px"  >
-                                <FormControl.Label>ID No.</FormControl.Label>
-
-                                <Input maxLength={60} keyboardType='default' variant="underlined" placeholder="002222" onChangeText={value => setData({
-                                    ...formData,
-                                    barCouncilIdNo: value
-                                })} />
-                                <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                                    {errors.barCouncilIdNo}
-                                </FormControl.ErrorMessage>
-                            </FormControl>
-                            <Divider bg="muted.800" thickness="2" orientation="vertical" />
-
-                            <FormControl isReadOnly isInvalid={'barCouncilYear' in errors} w="30%" maxW="300px"  >
-                                <FormControl.Label>Year</FormControl.Label>
-
-                                {/* <Input keyboardType='default' variant="underlined" placeholder="002222" onChangeText={value => setData({
+                        {/* <Input keyboardType='default' variant="underlined" placeholder="002222" onChangeText={value => setData({
                                 ...formData,
                                 idNo: value
                             })} /> */}
-                                <Select selectedValue={formData.barCouncilYear} minWidth="100" placeholder="Select One" _selectedItem={{
+
+                        <Controller
+                            control={control}
+                            rules={{
+                                required: isNextBtnClick && true,
+                            }}
+                            render={({ field: { onChange, onBlur, value } }) => (
+
+                                <Select selectedValue={value} minWidth="100" placeholder="Select One" _selectedItem={{
                                     bg: "teal.600",
                                     endIcon: <AIcon name={`down`} size={15} color='#fff' />
-                                    // }} mt={1} onValueChange={itemValue => setService(itemValue)}>
-                                }} mt={1} onValueChange={itemValue => setData({
-                                    ...formData,
-                                    barCouncilYear: itemValue
-                                })} >
+                                }} mt={1} onValueChange={itemValue => { setValue("barCouncilYear", itemValue), trigger("barCouncilYear") }}
+                                // onValueChange={itemValue => setData({
+                                //     ...formData,
+                                //     barCouncilYear: itemValue
+                                // })} 
+                                >
                                     {getYearList().map((x, i) => {
                                         return (
                                             <Select.Item
@@ -387,133 +236,378 @@ const RegisterProfileScreen = ({ navigation }) => {
                                     {/* <Select.Item label="2022" value="2022" /> */}
                                 </Select>
 
-                                <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                                    {errors.barCouncilYear}
-                                </FormControl.ErrorMessage>
-                            </FormControl>
-                        </Stack>
+                            )}
+                            name="barCouncilYear"
+                        />
+
+                        <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+                            {errors.barCouncilYear?.type === 'required' && `Bar council year is required`}
+                        </FormControl.ErrorMessage>
+                    </FormControl>
+                </Stack>
+
+            </>
+        )
+    }
+
+    const handelNextBtnFunc = () => {
+        if (!isNextBtnClick) {
+            setIsNextBtnClick(true)
+        } else if (isNextBtnClick) {
+            submitProfileUpdateFrom()
+        }
+    }
+
+    console.log(isValid, 'isValid--->');
+    // console.log(formData,'formData state--->');
+
+    return (
+        <>
+
+            <ScrollView style={{ flex: 1, backgroundColor: '#ffffff', marginTop: 10 }}
+                showsVerticalScrollIndicator={false}>
+
+                <Text style={{ color: '#4632A1', fontSize: 25, textAlign: 'center' }}>Thank you! Please complete your Registration</Text>
+
+                <View style={{ padding: 40 }}>
+
+                    {/*From input  */}
+                    {!isNextBtnClick ? <View style={{ marginTop: 5 }}>
 
 
-                        <FormControl isReadOnly mt={5} isInvalid={'selectedState' in errors} w="100%" maxW="300px"  >
+                        <FormControl isRequired isInvalid={'fName' in errors} w="100%" maxW="300px"  >
+                            <FormControl.Label>First Name</FormControl.Label>
+
+                            <Controller
+                                control={control}
+                                rules={{
+                                    required: true,
+                                }}
+                                render={({ field: { onChange, onBlur, value } }) => (
+
+                                    <Input autoCapitalize='none' value={value} maxLength={80} keyboardType='default' variant="underlined" placeholder="Enter First Name" onChangeText={onChange} onBlur={onBlur} />
+                                )}
+                                name="fName"
+                            />
+                            {/* <Input value={formData.fName} maxLength={80} keyboardType='default' variant="underlined" placeholder="Enter First Name" onChangeText={value => setData({
+                                ...formData,
+                                fName: value
+                            })} /> */}
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+                                {errors.fName?.type === 'required' && `First name is required`}
+
+                            </FormControl.ErrorMessage>
+
+                        </FormControl>
+
+                        <FormControl isRequired mt={5} isInvalid={'lName' in errors} w="100%" maxW="300px"  >
+                            <FormControl.Label>Last Name</FormControl.Label>
+
+                            <Controller
+                                control={control}
+                                rules={{
+                                    required: true,
+                                }}
+                                render={({ field: { onChange, onBlur, value } }) => (
+                                    <Input autoCapitalize='none' value={value} maxLength={80} keyboardType='default' variant="underlined" placeholder="Enter Last Name" onBlur={onBlur} onChangeText={onChange} />
+
+                                )}
+                                name="lName"
+                            />
+                            {/* <Input value={formData.lName} maxLength={80} keyboardType='default' variant="underlined" placeholder="Enter Last Name" onChangeText={value => setData({
+                                        ...formData,
+                                        lName: value
+                                    })} /> */}
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+                                {errors.lName?.type === 'required' && `Last name is required`}
+                            </FormControl.ErrorMessage>
+                        </FormControl>
+
+                        <FormControl isRequired mt={5} isInvalid={'gender' in errors} w="100%" maxW="300px"  >
+                            <FormControl.Label>Gender</FormControl.Label>
+
+                            <Controller
+                                control={control}
+                                rules={{
+                                    required: true,
+                                }}
+                                render={({ field: { onChange, onBlur, value } }) => (
+                                    <Radio.Group name="myRadioGroup" accessibilityLabel="Gender" value={value} onChange={nextValue => {
+                                        setValue("gender", nextValue)
+                                        trigger("gender")
+                                    }} style={{ display: "flex", flexDirection: "row", justifyContent: 'space-evenly' }}>
+                                        <Radio value="M" my={1}>
+                                            Male
+                                        </Radio>
+                                        <Radio value="F" my={1}>
+                                            Female
+                                        </Radio>
+                                        <Radio value="O" my={1}>
+                                            Others
+                                        </Radio>
+                                    </Radio.Group>
+                                )}
+                                name="gender"
+                            />
+
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+                                {errors.gender?.type === 'required' && `Gender is required`}
+                            </FormControl.ErrorMessage>
+                        </FormControl>
+
+
+                        <FormControl isRequired mt={5} isInvalid={'email' in errors} w="100%" maxW="300px"  >
+                            <FormControl.Label>Email</FormControl.Label>
+
+                            <Controller
+                                control={control}
+                                rules={{
+                                    required: true,
+                                    pattern: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g
+                                }}
+                                render={({ field: { onChange, onBlur, value } }) => (
+                                    <Input autoCapitalize='none' value={value} maxLength={100} keyboardType='email-address' variant="underlined" placeholder="Enter Email" onBlur={onBlur} onChangeText={onChange} />
+                                )}
+                                name="email"
+                            />
+                            {/* <Input value={formData.email} maxLength={100} keyboardType='email-address' variant="underlined" placeholder="Enter Email" onChangeText={value => setData({
+                                ...formData,
+                                email: value
+                            })} /> */}
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+                                {errors.email?.type === 'required' && `Email is required`}
+                                {errors.email?.type === 'pattern' && `Please enter valid email`}
+                            </FormControl.ErrorMessage>
+                        </FormControl>
+
+                        <FormControl isRequired mt={5} isInvalid={'password' in errors} w="100%" maxW="300px"  >
+                            <FormControl.Label>Password</FormControl.Label>
+
+                            <Controller
+                                control={control}
+                                rules={{
+                                    required: true,
+                                    pattern: /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/
+                                }}
+                                render={({ field: { onChange, onBlur, value } }) => (
+
+                                    <Input autoCapitalize='none' value={value} maxLength={30} type={"password"} keyboardType='default' variant="underlined" placeholder="Enter Password" onBlur={onBlur} onChangeText={onChange} />
+                                )}
+                                name="password"
+                            />
+                            {/* <Input value={formData.password} maxLength={30} type={"password"} keyboardType='default' variant="underlined" placeholder="Enter Password" onChangeText={value => setData({
+                                ...formData,
+                                password: value
+                            })} /> */}
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+                                {errors.password?.type === 'required' && `Password is required`}
+                                {errors.password?.type === 'pattern' && `Password should be minimum 8 characters with at least a symbol, upper and lower case letters and a number`}
+                            </FormControl.ErrorMessage>
+                        </FormControl>
+
+
+                        <FormControl isRequired isReadOnly mt={5} isInvalid={'selectedState' in errors} w="100%" maxW="300px"  >
                             <FormControl.Label>State</FormControl.Label>
 
-                            <Button variant="outline" _text={{ color: "gray.400" }} endIcon={<AIcon name={`down`} size={21} color='gray' />} onPress={() => setShowStateModal(true)}>{formData?.selectedState || 'Select State'}</Button>
-
-                            {/* <Select selectedValue={formData.stateId} minWidth="100" placeholder="Select State" _selectedItem={{
-                                bg: "teal.600",
-                                endIcon: <AIcon name={`down`} size={15} color='#fff' />
-                                // }} mt={1} onValueChange={itemValue => setService(itemValue)}>
-                            }} mt={1} onValueChange={itemValue => setData({
-                                ...formData,
-                                stateId: itemValue
-                            })} >
-                                {stateData.map(x => {
-                                    return (
-                                        <Select.Item
-                                            key={x.id}
-                                            label={x.name}
-                                            value={x.id}
-                                        />
-                                    );
-                                })}
-                            </Select> */}
+                            <Controller
+                                control={control}
+                                rules={{
+                                    required: true,
+                                }}
+                                render={({ field: { onChange, onBlur, value } }) => (
+                                    <SelectDropdown
+                                        data={stateData}
+                                        onBlur={onBlur}
+                                        onSelect={(selectedItem, index) => {
+                                            console.log(selectedItem, index)
+                                            setValue("selectedState", selectedItem?.name)
+                                            setValue("selectedCity", '')
+                                            selectCityDropdownRef.current.reset()
+                                            trigger(["selectedState", "selectedCity"])
+                                            setData({
+                                                ...formData,
+                                                stateId: selectedItem.id,
+                                                // selectedState: item.name,
+                                                cityId: '',
+                                                // selectedCity: ''
+                                            })
+                                        }}
+                                        buttonTextAfterSelection={(selectedItem, index) => {
+                                            return selectedItem?.name
+                                        }}
+                                        rowTextForSelection={(item, index) => {
+                                            return item?.name
+                                        }}
+                                        renderDropdownIcon={isOpened => {
+                                            return <AIcon name={isOpened ? 'up' : `down`} size={21} color='gray' />
+                                        }}
+                                        dropdownIconPosition={'right'}
+                                        defaultButtonText={getValues("selectedState") || 'Select State'}
+                                        search
+                                        renderSearchInputLeftIcon={() => {
+                                            return <AIcon name={`search1`} size={22} color='gray' />
+                                        }}
+                                    />
+                                )}
+                                name="selectedState"
+                            />
 
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                                {errors.selectedState}
+                                {errors.selectedState?.type === 'required' && `State is required`}
                             </FormControl.ErrorMessage>
                         </FormControl>
 
 
-                        <FormControl isReadOnly mt={5} isInvalid={'selectedCity' in errors} w="100%" maxW="300px"  >
+                        <FormControl isRequired isReadOnly mt={5} isInvalid={'selectedCity' in errors} w="100%" maxW="300px"  >
                             <FormControl.Label>City</FormControl.Label>
 
-                            <Button variant="outline" _text={{ color: "gray.400" }} endIcon={<AIcon name={`down`} size={21} color='gray' />} onPress={() => setShowCityModal(true)}>{formData?.selectedCity || 'Select City'}</Button>
-
-                            {/* <Input keyboardType='default' variant="underlined" placeholder="Enter City" onChangeText={value => setData({
-                                ...formData,
-                                city: value
-                            })} /> */}
-                            {/* <Select selectedValue={formData.cityId} minWidth="100" placeholder="Select City" _selectedItem={{
-                                bg: "teal.600",
-                                endIcon: <AIcon name={`down`} size={15} color='#fff' />
-                                // }} mt={1} onValueChange={itemValue => setService(itemValue)}>
-                            }} mt={1} onValueChange={itemValue => setData({
-                                ...formData,
-                                cityId: itemValue
-                            })} >
-                                {cityData.map(x => {
-                                    return (
-                                        <Select.Item
-                                            key={x.id}
-                                            label={x.name}
-                                            value={x.id}
-                                        />
-                                    );
-                                })}
-                            </Select> */}
+                            <Controller
+                                control={control}
+                                rules={{
+                                    required: true,
+                                }}
+                                render={({ field: { onChange, onBlur, value } }) => (
+                                    <SelectDropdown
+                                        data={cityData}
+                                        ref={selectCityDropdownRef}
+                                        onBlur={onBlur}
+                                        onSelect={(selectedItem, index) => {
+                                            console.log(selectedItem, index)
+                                            setValue("selectedCity", selectedItem?.name)
+                                            trigger("selectedCity")
+                                            setData({
+                                                ...formData,
+                                                cityId: selectedItem.id,
+                                                // selectedCity: item.name,
+                                            })
+                                        }}
+                                        buttonTextAfterSelection={(selectedItem, index) => {
+                                            // text represented after item is selected
+                                            // if data array is an array of objects then return selectedItem.property to render after item is selected
+                                            return selectedItem?.name
+                                        }}
+                                        rowTextForSelection={(item, index) => {
+                                            // text represented for each item in dropdown
+                                            // if data array is an array of objects then return item.property to represent item in dropdown
+                                            return item?.name
+                                        }}
+                                        renderDropdownIcon={isOpened => {
+                                            return <AIcon name={isOpened ? 'up' : `down`} size={21} color='gray' />
+                                        }}
+                                        dropdownIconPosition={'right'}
+                                        defaultButtonText={getValues("selectedCity") || 'Select City'}
+                                        search
+                                        renderSearchInputLeftIcon={() => {
+                                            return <AIcon name={`search1`} size={22} color='gray' />
+                                        }}
+                                    />
+                                )}
+                                name="selectedCity"
+                            />
 
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                                {errors.selectedCity}
+                                {errors.selectedCity?.type === 'required' && `City is required`}
                             </FormControl.ErrorMessage>
                         </FormControl>
 
 
-                        <FormControl mt={5} isInvalid={'pinCode' in errors} w="100%" maxW="300px"  >
+                        <FormControl isRequired mt={5} isInvalid={'pinCode' in errors} w="100%" maxW="300px"  >
                             <FormControl.Label>Pin Code</FormControl.Label>
 
-                            <Input maxLength={6} keyboardType='number-pad' variant="underlined" placeholder="Enter Pin Code" onChangeText={value => setData({
+                            {/* <Input value={formData.pinCode} maxLength={6} keyboardType='number-pad' variant="underlined" placeholder="Enter Pin Code" onChangeText={value => setData({
                                 ...formData,
                                 pinCode: value,
                                 localityId: '',
                                 selectedLocality: ''
-                            })} />
+                            })} /> */}
+                            <Controller
+                                control={control}
+                                rules={{
+                                    required: true,
+                                }}
+                                render={({ field: { onChange, onBlur, value } }) => (
+                                    <Input autoCapitalize='none' value={value} maxLength={6} keyboardType='number-pad' variant="underlined" placeholder="Enter Pin Code" onBlur={onBlur} onChangeText={onChange} />
+                                )}
+                                name="pinCode"
+                            />
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                                {errors.pinCode}
+                                {errors.pinCode?.type === 'required' && `PinCode is required`}
                             </FormControl.ErrorMessage>
                         </FormControl>
 
 
-                        <FormControl isReadOnly mt={5} isInvalid={'selectedLocality' in errors} w="100%" maxW="300px"  >
+                        <FormControl isRequired isReadOnly mt={5} isInvalid={'selectedLocality' in errors} w="100%" maxW="300px"  >
                             <FormControl.Label>Locality</FormControl.Label>
 
-                            <Button variant="outline" _text={{ color: "gray.400" }} endIcon={<AIcon name={`down`} size={21} color='gray' />} onPress={() => setShowLocalityModal(true)}>{formData?.selectedLocality || 'Select Locality'}</Button>
-
-                            {/* <Input keyboardType='default' variant="underlined" placeholder="Enter City" onChangeText={value => setData({
-                                ...formData,
-                                city: value
-                            })} /> */}
-                            {/* <Select selectedValue={formData.localityId} minWidth="100" placeholder="Select Locality" _selectedItem={{
-                                bg: "teal.600",
-                                endIcon: <AIcon name={`down`} size={15} color='#fff' />
-                            }} mt={1} onValueChange={itemValue => setData({
-                                ...formData,
-                                localityId: itemValue
-                            })} >
-                                {localityData.map(x => {
-                                    return (
-                                        <Select.Item
-                                            key={x.id}
-                                            label={x.name}
-                                            value={x.id}
-                                        />
-                                    );
-                                })}
-                            </Select> */}
+                            <Controller
+                                control={control}
+                                rules={{
+                                    required: true,
+                                }}
+                                render={({ field: { onChange, onBlur, value } }) => (
+                                    <SelectDropdown
+                                        data={localityData}
+                                        ref={selectLocalityDropdownRef}
+                                        onBlur={onBlur}
+                                        onSelect={(selectedItem, index) => {
+                                            console.log(selectedItem, index)
+                                            setValue("selectedLocality", selectedItem?.name)
+                                            trigger("selectedLocality")
+                                            setData({
+                                                ...formData,
+                                                localityId: selectedItem.id,
+                                                // selectedLocality: item.name,
+                                            })
+                                        }}
+                                        buttonTextAfterSelection={(selectedItem, index) => {
+                                            // text represented after item is selected
+                                            // if data array is an array of objects then return selectedItem.property to render after item is selected
+                                            return selectedItem?.name
+                                        }}
+                                        rowTextForSelection={(item, index) => {
+                                            // text represented for each item in dropdown
+                                            // if data array is an array of objects then return item.property to represent item in dropdown
+                                            return item?.name
+                                        }}
+                                        renderDropdownIcon={isOpened => {
+                                            return <AIcon name={isOpened ? 'up' : `down`} size={21} color='gray' />
+                                        }}
+                                        dropdownIconPosition={'right'}
+                                        defaultButtonText={getValues("selectedLocality") || 'Select Locality'}
+                                        search
+                                        renderSearchInputLeftIcon={() => {
+                                            return <AIcon name={`search1`} size={22} color='gray' />
+                                        }}
+                                    />
+                                )}
+                                name="selectedLocality"
+                            />
 
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-                                {errors.selectedLocality}
+                                {errors.selectedLocality?.type === 'required' && `Locality is required`}
+
                             </FormControl.ErrorMessage>
                         </FormControl>
+
 
 
                     </View>
 
+
+                        : BarCouncilFormView()
+                    }
+
                     {updateProfileInfo?.success == false && <Text style={{ color: 'red', marginTop: 15 }}>{updateProfileInfo?.message}</Text>}
 
                     {/*Register Profile button*/}
-                    <Button isDisabled={false} onPress={() => { validateFromInput() ? submitProfileUpdateFrom() : null }} rounded={20} style={{ shadowColor: '#00acee', alignSelf: 'center', backgroundColor: '#4632A1', width: width / 2, justifyContent: 'center', marginTop: 80 }}>
-                        <Text style={{ color: '#fff', }}>Next</Text>
-                    </Button>
+                    <View style={{ marginTop: 80, display: 'flex', flexDirection: 'row', justifyContent: isNextBtnClick ? 'space-between' : 'center', marginBottom: 17 }}>
+                        {isNextBtnClick && <Button isDisabled={false} onPress={() => { setIsNextBtnClick(false) }} rounded={20} style={{ shadowColor: '#00acee', alignSelf: 'center', backgroundColor: '#4632A1', width: width / 3 }}>
+                            <Text style={{ color: '#fff', }}>Back</Text>
+                        </Button>}
+                        <Button isDisabled={false} onPress={handleSubmit((d) => { onSubmit(d), handelNextBtnFunc(), console.log(d, '___124**') })} rounded={20} style={{ shadowColor: '#00acee', alignSelf: 'center', backgroundColor: '#4632A1', width: width / 3 }}>
+                            <Text style={{ color: '#fff', }}>{isNextBtnClick ? 'Submit' : 'Next'}</Text>
+                        </Button>
+                    </View>
 
 
                     <Text onPress={() => logout()} style={{ fontWeight: 'bold', marginTop: 10, color: '#ff6600', fontSize: 19, textAlign: 'center' }}>  {`Logout >`} </Text>
@@ -521,121 +615,6 @@ const RegisterProfileScreen = ({ navigation }) => {
 
 
             </ScrollView>
-
-            <Modal isOpen={showStateModal} onClose={() => { setShowStateModal(false), setSearchText('') }}>
-                <Modal.Content maxWidth="400px">
-                    <Modal.CloseButton />
-                    <VStack p={6} >
-                        <Input my={7} placeholder="Search by state name..." width="100%" borderRadius="4" py="3" px="3" fontSize="14" InputLeftElement={<AIcon name={`search1`} size={22} color='gray' />} onChangeText={value => setSearchText(value)} />
-
-                        <Heading fontSize="lg">Select your State</Heading>
-                        <FlatList data={stateData.filter(r => r.name.toLowerCase().includes(searchText.toLowerCase()))} renderItem={({ item, index }) => <Box borderBottomWidth="1" _dark={{
-                            borderColor: "gray.600"
-                        }} borderColor="coolGray.200" py="2"  >
-                            <TouchableOpacity
-                                style={{ backgroundColor: item.isSelected == true ? 'green' : '', padding: 5, }}
-                                // onPress={() => onPressList(item, index)}
-                                onPress={() => {
-                                    setData({
-                                        ...formData,
-                                        stateId: item.id,
-                                        selectedState: item.name,
-                                        cityId: '',
-                                        selectedCity: ''
-                                    }),
-                                        setShowStateModal(false)
-                                    setSearchText('')
-                                    setStateData(onSelectFlatListItem(stateData, item.id))
-                                }}
-                            >
-                                <HStack mb={2} justifyContent="space-between" style={{ display: 'flex', justifyContent: 'space-between' }}>
-
-                                    <Text style={{ color: item.isSelected == true ? '#fff' : 'gray', fontWeight: 'bold' }} >
-                                        {item?.name}
-                                    </Text>
-                                </HStack>
-                            </TouchableOpacity>
-                        </Box>} keyExtractor={item => item.id} />
-
-                    </VStack>
-                </Modal.Content>
-            </Modal>
-
-
-
-            <Modal isOpen={showCityModal} onClose={() => { setShowCityModal(false), setSearchText('') }}>
-                <Modal.Content maxWidth="400px">
-                    <Modal.CloseButton />
-                    <VStack p={6} >
-                        <Input my={7} placeholder="Search by state name..." width="100%" borderRadius="4" py="3" px="3" fontSize="14" InputLeftElement={<AIcon name={`search1`} size={22} color='gray' />} onChangeText={value => setSearchText(value)} />
-
-                        <Heading fontSize="lg">Select your City</Heading>
-                        <FlatList data={cityData.filter(r => r.name.toLowerCase().includes(searchText.toLowerCase()))} renderItem={({ item, index }) => <Box borderBottomWidth="1" _dark={{
-                            borderColor: "gray.600"
-                        }} borderColor="coolGray.200" py="2"  >
-                            <TouchableOpacity
-                                style={{ backgroundColor: item.isSelected == true ? 'green' : '', padding: 5, }}
-                                // onPress={() => onPressList(item, index)}
-                                onPress={() => {
-                                    setData({
-                                        ...formData,
-                                        cityId: item.id,
-                                        selectedCity: item.name
-                                    }),
-                                        setShowCityModal(false)
-                                    setSearchText('')
-                                    setCityData(onSelectFlatListItem(cityData, item.id))
-                                }}
-                            >
-                                <HStack mb={2} justifyContent="space-between" style={{ display: 'flex', justifyContent: 'space-between' }}>
-
-                                    <Text style={{ color: item.isSelected == true ? '#fff' : 'gray', fontWeight: 'bold' }} >
-                                        {item?.name}
-                                    </Text>
-                                </HStack>
-                            </TouchableOpacity>
-                        </Box>} keyExtractor={item => item.id} />
-
-                    </VStack>
-                </Modal.Content>
-            </Modal>
-
-
-            <Modal isOpen={showLocalityModal} onClose={() => { setShowLocalityModal(false), setSearchText('') }}>
-                <Modal.Content maxWidth="400px">
-                    <Modal.CloseButton />
-                    <VStack p={6} >
-                        <Input my={7} placeholder="Search by locality name..." width="100%" borderRadius="4" py="3" px="3" fontSize="14" InputLeftElement={<AIcon name={`search1`} size={22} color='gray' />} onChangeText={value => setSearchText(value)} />
-
-                        <Heading fontSize="lg">Select your Locality</Heading>
-                        <FlatList data={localityData.filter(r => r.name.toLowerCase().includes(searchText.toLowerCase()))} renderItem={({ item, index }) => <Box borderBottomWidth="1" _dark={{
-                            borderColor: "gray.600"
-                        }} borderColor="coolGray.200" py="2"  >
-                            <TouchableOpacity
-                                style={{ backgroundColor: item.isSelected == true ? 'green' : '', padding: 5, }}
-                                onPress={() => {
-                                    setData({
-                                        ...formData,
-                                        localityId: item.id,
-                                        selectedLocality: item.name
-                                    }),
-                                        setShowLocalityModal(false)
-                                    setSearchText('')
-                                    setLocalityData(onSelectFlatListItem(localityData, item.id))
-                                }}
-                            >
-                                <HStack mb={2} justifyContent="space-between" style={{ display: 'flex', justifyContent: 'space-between' }}>
-
-                                    <Text style={{ color: item.isSelected == true ? '#fff' : 'gray', fontWeight: 'bold' }} >
-                                        {item?.name}
-                                    </Text>
-                                </HStack>
-                            </TouchableOpacity>
-                        </Box>} keyExtractor={item => item.id} />
-
-                    </VStack>
-                </Modal.Content>
-            </Modal>
 
 
             <Spinner visible={isLoading} />

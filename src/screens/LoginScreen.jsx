@@ -121,13 +121,13 @@ const LoginScreen = ({ navigation }) => {
             login(verifiedOtpInfo?.token)
         }
     }, [verifiedOtpInfo])
-
+    
     useEffect(() => {
         const indianNoRegex = /^[6-9]{1}[0-9]{9}$/;
         const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
 
         if (formData?.uId) {
-
+            
             if (emailRegex.test(formData?.uId) === true) {
                 console.log('It is a valid email -->');
                 setIsValidEmail(true)
@@ -140,17 +140,17 @@ const LoginScreen = ({ navigation }) => {
                 setIsValidMobileNo(false)
                 setIsValidEmail(false)
             }
-
+            
         }
     }, [formData?.uId])
-
-
-
+    
+    
+    
     useEffect(() => {
         enteredOTP?.length > 5 && verifyPhoneOTP()        
         dispatch(resetVerifyInfo())
-      }, [enteredOTP])
-
+    }, [enteredOTP])
+    
 
     
     return (
@@ -171,7 +171,7 @@ const LoginScreen = ({ navigation }) => {
                         <FormControl isInvalid={'uId' in errors} w="100%" maxW="300px"  >
                             <FormControl.Label>Enter email/ Mobile no.</FormControl.Label>
 
-                            <Input maxLength={formData?.uId?.length > 4 &&  /^\d+$/.test(formData?.uId) ? 10 :80 } keyboardType='default' variant="underlined" placeholder="Enter email/ Mobile no." onChangeText={value => setData({
+                            <Input autoCapitalize='none' value={formData?.uId} maxLength={formData?.uId?.length > 4 &&  /^\d+$/.test(formData?.uId) ? 10 :80 } keyboardType='default' variant="underlined" placeholder="Enter email/ Mobile no." onChangeText={value => setData({
                                 ...formData,
                                 uId: value
                             })} />
@@ -210,7 +210,7 @@ const LoginScreen = ({ navigation }) => {
 
             </ScrollView>
 
-                : <OtpScreen verifiedOtpInfo={verifiedOtpInfo} disableVerifyBtn={enteredOTP?.length > 5 ?false :true} resendOTP={resendOTP} disableTimer={disableTimer} setEnteredOTP={setEnteredOTP} number={formData?.uId} goToLogin={()=> setIsLoginBtnClick(false)} myOnpress={() => verifyPhoneOTP()}  callResendPhoneOTPApi={() => callResendPhoneOTPApi()}  />
+                : <OtpScreen verifiedOtpInfo={verifiedOtpInfo} disableVerifyBtn={enteredOTP?.length > 5 ?false :true} resendOTP={resendOTP} disableTimer={disableTimer} setEnteredOTP={setEnteredOTP} number={formData?.uId} goToLogin={()=> {setIsLoginBtnClick(false),setIsValidMobileNo(false), setData({})}} myOnpress={() => verifyPhoneOTP()}  callResendPhoneOTPApi={() => callResendPhoneOTPApi()}  />
             }
 
             
