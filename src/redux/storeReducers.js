@@ -8,6 +8,9 @@ import verifyRegisterPhoneOTPReducer from "./slicers/verifyRegisterPhoneOTPSlice
 import resendPhoneOTPReducer from "./slicers/resendPhoneOTPSlicer"; 
 import getLawyerProfileDetailsReducer from "./slicers/getLawyerProfileDetailsSlicer"; 
 import updateLawyerProfileReducer from "./slicers/updateLawyerProfileSlicer"; 
+import getTalkZoneDetailsReducer from "./slicers/getTalkZoneDetailsSlicer"; 
+import getTakeCallStatusReducer from "./slicers/getTakeCallStatusSlicer"; 
+import getScheduleCallListDetailsReducer from "./slicers/getScheduleCallListDetailsSlicer"; 
 
 const reducers = {
     loginReducer: loginReducer,
@@ -17,6 +20,9 @@ const reducers = {
     resendPhoneOTPReducer: resendPhoneOTPReducer,
     getLawyerProfileDetailsReducer: getLawyerProfileDetailsReducer,
     updateLawyerProfileReducer: updateLawyerProfileReducer,
+    getTalkZoneDetailsReducer: getTalkZoneDetailsReducer,
+    getTakeCallStatusReducer: getTakeCallStatusReducer,
+    getScheduleCallListDetailsReducer: getScheduleCallListDetailsReducer,
    
 }
 

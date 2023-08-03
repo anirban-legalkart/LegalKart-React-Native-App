@@ -7,6 +7,9 @@ import verifyRegisterPhoneOTPSaga from "./verifyRegisterPhoneOTPSaga";
 import resendPhoneOTPSaga from "./resendPhoneOTPSaga";
 import getLawyerProfileDetailsSaga from "./getLawyerProfileDetailsSaga";
 import updateLawyerProfileSaga from "./updateLawyerProfileSaga";
+import getTalkZoneDetailsSaga from "./getTalkZoneDetailsSaga";
+import getTakeCallStatusSaga from "./getTakeCallStatusSaga";
+import getScheduleCallListDetailsSaga from "./getScheduleCallListDetailsSaga";
 
 
 export default function* rootSaga() {
@@ -18,6 +21,9 @@ export default function* rootSaga() {
         resendPhoneOTPSaga(),
         getLawyerProfileDetailsSaga(),
         updateLawyerProfileSaga(),
+        getTalkZoneDetailsSaga(),
+        getTakeCallStatusSaga(),
+        getScheduleCallListDetailsSaga(),
     ]);
 }
 

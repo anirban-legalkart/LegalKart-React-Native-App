@@ -47,6 +47,17 @@ const HomeScreen = ({ navigation }) => {
                         Logout
                     </Text>
                 </TouchableOpacity>
+
+                <TouchableOpacity style={{
+                    alignItems: 'center',
+                    backgroundColor: 'purple',
+                    marginTop: 45,
+                    padding: 10,
+                }} onPress={() => navigation.navigate('TalkZone')}>
+                    <Text style={{color:'#fff', fontWeight:'bold'}}>
+                        Talk zone
+                    </Text>
+                </TouchableOpacity>
             </View>
 
             <Spinner visible={isLoading} />
