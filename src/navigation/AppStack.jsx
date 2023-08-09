@@ -2,7 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import HomeScreen from '../screens/HomeScreen';
 import RegisterProfileScreen from '../screens/RegisterProfileScreen';
-import TalkZoneScreen from '../screens/TalkZoneScreen';
+import TalkZone from '../screens/TalkZone/MainScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,10 +15,10 @@ const AppStack = () => {
         options={{headerShown: false}}
       />
       <Stack.Screen
-        name="TalkZone"
-        component={TalkZoneScreen}
+        name="TalkZoneMain"
+        component={TalkZone}
         options={{headerShown: false}}
-      />
+      />     
       <Stack.Screen
         name="RegisterProfile"
         component={RegisterProfileScreen}

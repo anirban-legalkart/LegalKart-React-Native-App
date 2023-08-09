@@ -51,13 +51,14 @@ const HomeScreen = ({ navigation }) => {
                 <TouchableOpacity style={{
                     alignItems: 'center',
                     backgroundColor: 'purple',
-                    marginTop: 45,
+                    marginVertical: 45,
                     padding: 10,
-                }} onPress={() => navigation.navigate('TalkZone')}>
+                }} onPress={() => navigation.navigate('TalkZoneMain')}>
                     <Text style={{color:'#fff', fontWeight:'bold'}}>
-                        Talk zone
+                        Talk zone Main
                     </Text>
                 </TouchableOpacity>
+
             </View>
 
             <Spinner visible={isLoading} />

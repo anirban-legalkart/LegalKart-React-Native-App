@@ -38,6 +38,7 @@ import AppNav from './src/navigation/AppNav';
 import AppStack from './src/navigation/AppStack';
 import { store } from './src/redux/store';
 import { Provider } from 'react-redux';
+import Toast from 'react-native-toast-message';
 
 
 // const FakeContext = createContext();
@@ -106,6 +107,7 @@ function App() {
           userToken !== null ? <AppStack /> : <AuthStack />
         } */}
         <AppNav/>
+        <Toast />
         {/* </NavigationContainer> */}
         {/* <Text>{storedEvents}</Text> */}
       {/* </AuthContext.Provider> */}
