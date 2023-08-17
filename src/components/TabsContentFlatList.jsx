@@ -2,7 +2,7 @@ import { Text } from 'native-base';
 import React from 'react';
 import { ActivityIndicator, FlatList, View } from 'react-native';
 
-const CommonTabsContentFlatList  = (props) => {
+const TabsContentFlatList  = (props) => {
     
 
     return (
@@ -36,5 +36,5 @@ const CommonTabsContentFlatList  = (props) => {
     )
 }
 
-export default CommonTabsContentFlatList 
+export default TabsContentFlatList 
 

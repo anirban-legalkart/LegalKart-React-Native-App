@@ -1,6 +1,6 @@
 import { Button, Divider, FormControl, Input, Radio, Select, Stack, WarningOutlineIcon } from "native-base";
 import { BackHandler, Dimensions, ScrollView, Text, View } from 'react-native';
-import AIcon from 'react-native-vector-icons/dist/AntDesign';
+import AIcon from 'react-native-vector-icons/AntDesign';
 import { useDispatch, useSelector } from 'react-redux';
 
 import React, { useContext, useEffect, useRef, useState } from 'react';

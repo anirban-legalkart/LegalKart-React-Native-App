@@ -1,23 +1,17 @@
-import { Box, HStack, Heading, Switch, Text } from 'native-base';
+import { HStack, Text } from 'native-base';
 import React from 'react';
 import { Dimensions, View } from 'react-native';
-import Toast from 'react-native-toast-message';
-import { callChangeCallReceiveAvailabilityApi } from '../../services/changeCallReceiveAvailabilityApi';
+import TakeCallsScreen from '../../components/TakeCallsScreen';
 
 const { width, height } = Dimensions.get('screen');
 
-const HeaderSec = ({setIsTakeCallsActive, isTakeCallsActive, talkZoneData },props) => {
+const HeaderSec = (props) => {
+    const { talkZoneData, params, navigation } = props;
+    // const { route: { params } } = props;
 
-    const handelCallReceiveAvailability = () => {
-          setIsTakeCallsActive(!isTakeCallsActive)
-        callChangeCallReceiveAvailabilityApi({ is_active: !isTakeCallsActive }).then((res) => {
-            Toast.show({
-                type: 'success',
-                text1: res?.message
-            });
-          console.log(res,'resssss----')
-        })
-      }
+    // console.log(params,'Passed Data----');
+    // console.log(navigation,'navigation Data----');
+
 
     return (
         <>
@@ -47,31 +41,7 @@ const HeaderSec = ({setIsTakeCallsActive, isTakeCallsActive, talkZoneData },prop
             </View>
 
 
-            <Box marginY={5} maxW="80" rounded="lg" overflow="hidden" borderColor="coolGray.200" borderWidth="1" _dark={{
-                borderColor: "coolGray.600",
-                backgroundColor: "gray.700"
-            }} _web={{
-                shadow: 2,
-                borderWidth: 0
-            }} _light={{
-                backgroundColor: "gray.50"
-            }}>
-                <HStack p="4" alignItems="center" space={4} justifyContent="space-between">
-                    <Heading size="md" ml="-1">
-                        Take Calls?
-                    </Heading>
-
-                    <HStack>
-                        <Switch mr={4} size="lg" colorScheme="emerald" value={isTakeCallsActive} onToggle={handelCallReceiveAvailability} />
-                        <Text fontSize="lg" _light={{
-                            color: "black"
-                        }} fontWeight="bold" >
-                            {isTakeCallsActive ? 'Yes' : 'No'}
-                        </Text>
-                    </HStack>
-                </HStack>
-
-            </Box>
+            <TakeCallsScreen />
         </>
     )
 }

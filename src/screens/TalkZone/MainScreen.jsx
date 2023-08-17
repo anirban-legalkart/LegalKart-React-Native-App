@@ -8,7 +8,7 @@ import { onGetScheduleCallListDetailsSubmit } from '../../redux/slicers/getSched
 import { onGetTakeCallStatusSubmit } from '../../redux/slicers/getTakeCallStatusSlicer';
 import { onGetTalkZoneDetailsSubmit } from '../../redux/slicers/getTalkZoneDetailsSlicer';
 import { callViewLawyerProfileByTypeApi } from '../../services/viewLawyerProfileByTypeApi';
-import CommonTabsContentFlatList from '../../components/CommonTabsContentFlatList';
+import TabsContentFlatList from '../../components/TabsContentFlatList';
 import GenerateRecentsCallsRow from './GenerateRecentsCallsRow';
 import GeneratedRequestCallsRow from './GeneratedRequestCallsRow';
 import GeneratedUpcomingCallsRow from './GeneratedUpcomingCallsRow';
@@ -23,8 +23,9 @@ const initialLayout = { width: Dimensions.get('window').width };
 
 
 
-const MainScreen = ({ navigation }) => {
+const MainScreen = (props) => {
   const dispatch = useDispatch();
+  const { route: { params }, navigation } = props;
 
   const [index, setIndex] = useState(0);
   const [routes, setRoutes] = useState([
@@ -60,11 +61,11 @@ const MainScreen = ({ navigation }) => {
 
 
   const talkZoneDetailsInfo = useSelector(state => state.getTalkZoneDetailsReducer.data);
-  const takeCallStatusInfo = useSelector(state => state.getTakeCallStatusReducer.data);
+  // const takeCallStatusInfo = useSelector(state => state.getTakeCallStatusReducer.data);
   const scheduleCallListDetailsInfo = useSelector(state => state.getScheduleCallListDetailsReducer.data);
 
 
-
+  
   const callGetTalkZoneDetailApi = () => {
     // console.log('api is callled----');
     dispatch(onGetTalkZoneDetailsSubmit({
@@ -101,7 +102,7 @@ const MainScreen = ({ navigation }) => {
     setIsLoading(true)
     // console.log('useEffect is called------??');
     callGetTalkZoneDetailApi()
-    dispatch(onGetTakeCallStatusSubmit())
+    // dispatch(onGetTakeCallStatusSubmit())
     getCurrentCallRate()
   }, [])
 
@@ -151,7 +152,7 @@ const MainScreen = ({ navigation }) => {
     } else {
       // console.log('Inside 2nd IFFF')
       setRecentsCallsInfo(talkZoneDetailsInfo?.calling_list)
-
+      setIsLoading(false)
     }
     // console.log(talkZoneDetailsInfo, 'talkZoneDetailsInfo----')
   }, [talkZoneDetailsInfo])
@@ -183,13 +184,13 @@ const MainScreen = ({ navigation }) => {
     // console.log(scheduleCallListDetailsInfo, 'scheduleCallListDetailsInfo');
   }, [scheduleCallListDetailsInfo])
 
-  useEffect(() => {
-    if (takeCallStatusInfo?.call_service_slot_details) {
-      setIsTakeCallsActive(takeCallStatusInfo?.call_service_slot_details?.active_status)
-      setIsLoading(false)
-    }
-    // console.log(takeCallStatusInfo?.call_service_slot_details, 'talkZoneDetailsInfo----')
-  }, [takeCallStatusInfo])
+  // useEffect(() => {
+  //   if (takeCallStatusInfo?.call_service_slot_details) {
+  //     setIsTakeCallsActive(takeCallStatusInfo?.call_service_slot_details?.active_status)
+  //     setIsLoading(false)
+  //   }
+  //   // console.log(takeCallStatusInfo?.call_service_slot_details, 'talkZoneDetailsInfo----')
+  // }, [takeCallStatusInfo])
 
   
   useEffect(() => {
@@ -271,7 +272,7 @@ const MainScreen = ({ navigation }) => {
   const FirstRoute = () => (
     <View style={[styles.scene, { backgroundColor: '#fff' }]} >
 
-      <CommonTabsContentFlatList
+      <TabsContentFlatList
         itemArray={recentsCallsInfo}
         renderItem={({ item }) => (
 
@@ -295,7 +296,7 @@ const MainScreen = ({ navigation }) => {
   const SecondRoute = () => (
     <View style={[styles.scene, { backgroundColor: '#fff' }]} >
 
-      <CommonTabsContentFlatList
+      <TabsContentFlatList
         itemArray={upcomingCallsInfo}
         renderItem={({ item }) => (
 
@@ -318,7 +319,7 @@ const MainScreen = ({ navigation }) => {
   const ThirdRoute = () => (
     <View style={[styles.scene, { backgroundColor: '#fff' }]} >
 
-      <CommonTabsContentFlatList
+      <TabsContentFlatList
         itemArray={requestCallsInfo}
         renderItem={({ item }) => (
 
@@ -354,7 +355,7 @@ const MainScreen = ({ navigation }) => {
           <SafeAreaView
             edges={['top']}>
 
-            <HeaderSec talkZoneData={talkZoneData} isTakeCallsActive={isTakeCallsActive} setIsTakeCallsActive={setIsTakeCallsActive} />
+            <HeaderSec talkZoneData={talkZoneData} params={params} navigation={navigation}/>
 
           </SafeAreaView>
 

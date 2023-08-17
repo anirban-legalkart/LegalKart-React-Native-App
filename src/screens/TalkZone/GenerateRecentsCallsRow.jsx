@@ -4,7 +4,7 @@ import { Controller, useForm } from "react-hook-form";
 import { Dimensions, View } from 'react-native';
 import { AirbnbRating } from 'react-native-ratings';
 import Toast from 'react-native-toast-message';
-import AIcon from 'react-native-vector-icons/dist/AntDesign';
+import AIcon from 'react-native-vector-icons/AntDesign';
 import { useSelector } from 'react-redux';
 import TalkZoneModal from '../../components/TalkZoneModal';
 import { callAddCustomRateApi } from '../../services/addCustomRateApi';

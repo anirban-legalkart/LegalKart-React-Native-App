@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { AuthContext } from '../context/AuthContext';
 import { useDispatch, useSelector } from 'react-redux';
+import TakeCallsScreen from '../components/TakeCallsScreen';
 import Spinner from '../components/Spinner';
+import { AuthContext } from '../context/AuthContext';
 import { onGetLawyerProfileDetailsSubmit } from '../redux/slicers/getLawyerProfileDetailsSlicer';
 
 const HomeScreen = ({ navigation }) => {
@@ -10,9 +11,9 @@ const HomeScreen = ({ navigation }) => {
     const dispatch = useDispatch();
 
     const [isLoading, setIsLoading] = useState(true);
-    
+
     const lawyerProfileDetailsInfo = useSelector(state => state.getLawyerProfileDetailsReducer.data);
-    
+
     useEffect(() => {
         dispatch(onGetLawyerProfileDetailsSubmit())
     }, [])
@@ -58,6 +59,11 @@ const HomeScreen = ({ navigation }) => {
                         Talk zone Main
                     </Text>
                 </TouchableOpacity>
+
+                <View style={{ marginLeft: 15 }}>
+                    <TakeCallsScreen  />
+                </View>
+
 
             </View>
 

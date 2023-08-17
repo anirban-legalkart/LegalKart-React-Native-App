@@ -3,7 +3,8 @@ import { Box, Button, FormControl, HStack, Heading, Input, Modal, VStack } from 
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Dimensions, BackHandler, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import PhoneInput from "react-native-phone-number-input";
-import AIcon from 'react-native-vector-icons/dist/AntDesign';
+// import AIcon from 'react-native-vector-icons/AntDesign';
+import { AntDesign } from '@expo/vector-icons/AntDesign'
 import { useDispatch, useSelector } from 'react-redux';
 import OtpScreen from '../components/OtpScreen';
 import Spinner from '../components/Spinner';

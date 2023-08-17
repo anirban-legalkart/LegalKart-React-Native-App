@@ -20,4 +20,4 @@ export const GENERATE_PAYMENT_LINK_API = 'api/v1/lawyer/payment-link/create'
 export const ADD_CUSTOM_RATE_API = 'api/v1/lawyer/add-custom-lkc-rate'
 export const GET_CLIENT_DETAILS_API =(client_id) => `api/v1/lawyer/talk-zone-jc-lead/buy/${'app'}/${client_id}`
 export const RESCHEDULE_CALL_API = 'api/v1/lawyer/lkc/accept-schedule-call'
-// export const RESCHEDULE_CALL_API = 'api/v1/lawyer/lkc/accept-schedule-call'
+export const VIEW_LAWER_PROFILE_API = 'view-lawyer-profile'

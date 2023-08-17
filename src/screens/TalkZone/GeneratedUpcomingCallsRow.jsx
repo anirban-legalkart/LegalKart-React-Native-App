@@ -4,7 +4,7 @@ import { Box, Button, HStack, Heading, Stack, Text } from 'native-base';
 import React, { useState } from 'react';
 import { Dimensions } from 'react-native';
 import Toast from 'react-native-toast-message';
-import AIcon from 'react-native-vector-icons/dist/AntDesign';
+import AIcon from 'react-native-vector-icons/AntDesign';
 import TalkZoneModal from '../../components/TalkZoneModal';
 import { callRescheduleCallApi } from '../../services/rescheduleCallApi';
 const { width, height } = Dimensions.get('screen');
